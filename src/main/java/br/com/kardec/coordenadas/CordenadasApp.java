@@ -11,7 +11,6 @@ public class CordenadasApp {
 
         // Painel de desenho
         PainelDesenho painelDesenho = new PainelDesenho();
-        frame.add(painelDesenho, BorderLayout.CENTER);
 
         // Painel de controle
         JPanel controlPanel = new JPanel();
@@ -26,15 +25,30 @@ public class CordenadasApp {
         JButton circuloButton = new JButton("Circulo");
         circuloButton.addActionListener(e -> painelDesenho.setAlgorithm("Circulo"));
 
+        // Botão para selecionar Curvas
+        JButton curvasButton = new JButton("Curvas");
+        curvasButton.addActionListener(e -> {
+            String[] options = {"Grau 2", "Grau 3"};
+            int response = JOptionPane.showOptionDialog(null, "Escolha o tipo de curva Bezier:",
+                    "Curva Bezier", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null, options, options[0]);
+            painelDesenho.setBezierDegree(response == 0 ? 2 : 3);
+            painelDesenho.setAlgorithm("Curvas");
+        });
+
         // Botão para limpar a tela
         JButton clearButton = new JButton("Limpar");
         clearButton.addActionListener(e -> painelDesenho.clearScreen());
 
         controlPanel.add(bresenhamButton);
         controlPanel.add(circuloButton);
+        controlPanel.add(curvasButton);
         controlPanel.add(clearButton);
 
-        frame.add(controlPanel, BorderLayout.EAST);
+        // Usar JSplitPane para permitir redimensionamento
+        JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, painelDesenho, controlPanel);
+        splitPane.setDividerLocation(600);
+        frame.add(splitPane);
         frame.setVisible(true);
     }
+
 }
