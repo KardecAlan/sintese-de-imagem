@@ -17,6 +17,7 @@ public class PainelDesenho extends JPanel {
     private int bezierDegree = 3; // Grau padrão 3
     private String selectedAlgorithm = "";
     private ArrayList<Ponto> pontosDesenho = new ArrayList<>();
+    private ArrayList<Ponto> pontosEntrada = new ArrayList<>(); // Armazenar pontos de entrada do usuário
     private JTextArea coordenadasArea;
 
     public PainelDesenho(JTextArea coordenadasArea) {
@@ -38,6 +39,7 @@ public class PainelDesenho extends JPanel {
     public void setAlgorithm(String algorithm) {
         this.selectedAlgorithm = algorithm;
         this.clickCount = 0; // Resetar o contador de cliques ao mudar o algoritmo
+        pontosEntrada.clear(); // Limpar pontos de entrada quando mudar o algoritmo
         coordenadasArea.setText(""); // Limpar coordenadas quando mudar o algoritmo
     }
 
@@ -47,6 +49,7 @@ public class PainelDesenho extends JPanel {
 
     public void clearScreen() {
         pontosDesenho.clear();
+        pontosEntrada.clear(); // Limpar pontos de entrada
         coordenadasArea.setText(""); // Limpar a área de texto
         repaint();
     }
@@ -63,13 +66,16 @@ public class PainelDesenho extends JPanel {
         if (clickCount == 0) {
             x1 = gridX;
             y1 = gridY;
+            pontosEntrada.add(new Ponto(x1, y1)); // Adicionar ponto de entrada
             clickCount++;
         } else {
             x2 = gridX;
             y2 = gridY;
+            pontosEntrada.add(new Ponto(x2, y2)); // Adicionar ponto de entrada
             clickCount = 0;
             executeBresenham(new Ponto(x1, y1), new Ponto(x2, y2));
         }
+        repaint(); // Atualizar para destacar os pontos de entrada
     }
 
     private void handleCirculoClick(MouseEvent e) {
@@ -81,6 +87,8 @@ public class PainelDesenho extends JPanel {
         int gridX = (mouseX - centerX) / (getWidth() / 22);
         int gridY = (centerY - mouseY) / (getHeight() / 22);
 
+        pontosEntrada.add(new Ponto(gridX, gridY)); // Adicionar ponto de entrada para o centro do círculo
+
         String inputRaio = JOptionPane.showInputDialog("Digite o raio do círculo:");
         if (inputRaio != null) {
             try {
@@ -90,6 +98,7 @@ public class PainelDesenho extends JPanel {
                 JOptionPane.showMessageDialog(this, "Por favor, insira um valor numérico válido para o raio.");
             }
         }
+        repaint(); // Atualizar para destacar os pontos de entrada
     }
 
     private void handleCurvasClick(MouseEvent e) {
@@ -105,14 +114,17 @@ public class PainelDesenho extends JPanel {
             if (clickCount == 0) {
                 x1 = gridX;
                 y1 = gridY;
+                pontosEntrada.add(new Ponto(x1, y1)); // Adicionar ponto de entrada
                 clickCount++;
             } else if (clickCount == 1) {
                 x2 = gridX;
                 y2 = gridY;
+                pontosEntrada.add(new Ponto(x2, y2)); // Adicionar ponto de entrada
                 clickCount++;
             } else {
                 x3 = gridX;
                 y3 = gridY;
+                pontosEntrada.add(new Ponto(x3, y3)); // Adicionar ponto de entrada
                 clickCount = 0;
                 executeCurvas(new Ponto(x1, y1), new Ponto(x2, y2), null, new Ponto(x3, y3));
             }
@@ -120,22 +132,27 @@ public class PainelDesenho extends JPanel {
             if (clickCount == 0) {
                 x1 = gridX;
                 y1 = gridY;
+                pontosEntrada.add(new Ponto(x1, y1)); // Adicionar ponto de entrada
                 clickCount++;
             } else if (clickCount == 1) {
                 x2 = gridX;
                 y2 = gridY;
+                pontosEntrada.add(new Ponto(x2, y2)); // Adicionar ponto de entrada
                 clickCount++;
             } else if (clickCount == 2) {
                 x3 = gridX;
                 y3 = gridY;
+                pontosEntrada.add(new Ponto(x3, y3)); // Adicionar ponto de entrada
                 clickCount++;
             } else {
                 x4 = gridX;
                 y4 = gridY;
+                pontosEntrada.add(new Ponto(x4, y4)); // Adicionar ponto de entrada
                 clickCount = 0;
                 executeCurvas(new Ponto(x1, y1), new Ponto(x2, y2), new Ponto(x3, y3), new Ponto(x4, y4));
             }
         }
+        repaint(); // Atualizar para destacar os pontos de entrada
     }
 
     private void executeBresenham(Ponto p1, Ponto p2) {
@@ -190,6 +207,15 @@ public class PainelDesenho extends JPanel {
         g2d.drawLine(width / 2, 0, width / 2, height);
         g2d.drawLine(0, height / 2, width, height / 2);
 
+        // Desenhar pontos destacados de entrada
+        g2d.setColor(Color.BLUE);
+        for (Ponto ponto : pontosEntrada) {
+            int screenX = width / 2 + ponto.getX() * (width / 22);
+            int screenY = height / 2 - ponto.getY() * (height / 22);
+            g2d.fillOval(screenX - 5, screenY - 5, 10, 10); // Desenhar ponto de entrada como um círculo maior
+        }
+
+        // Desenhar pontos do desenho final
         g2d.setColor(Color.RED);
         for (Ponto ponto : pontosDesenho) {
             int screenX = width / 2 + ponto.getX() * (width / 22);
