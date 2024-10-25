@@ -41,10 +41,29 @@ public class CordenadasApp {
         JButton clearButton = new JButton("Limpar");
         clearButton.addActionListener(e -> painelDesenho.clearScreen());
 
+        // Botão para definir o tamanho da tela de coordenadas
+        JButton definirTamanhoButton = new JButton("Definir Tamanho da Tela");
+        definirTamanhoButton.addActionListener(e -> {
+            String input = JOptionPane.showInputDialog("Digite o valor máximo das coordenadas (exemplo: 20 para -20 a 20):");
+            if (input != null) {
+                try {
+                    int tamanho = Integer.parseInt(input);
+                    if (tamanho > 0) {
+                        painelDesenho.setTamanhoCoordenadas(tamanho);
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Por favor, insira um número positivo.");
+                    }
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(null, "Por favor, insira um número válido.");
+                }
+            }
+        });
+
         controlPanel.add(bresenhamButton);
         controlPanel.add(circuloButton);
         controlPanel.add(curvasButton);
         controlPanel.add(clearButton);
+        controlPanel.add(definirTamanhoButton);
 
         // Adicionar a área de texto para exibir coordenadas
         controlPanel.add(new JLabel("Coordenadas dos Pontos:"));

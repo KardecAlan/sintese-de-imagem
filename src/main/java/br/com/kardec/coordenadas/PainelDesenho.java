@@ -15,6 +15,7 @@ public class PainelDesenho extends JPanel {
     private int x1, y1, x2, y2, x3, y3, x4, y4;
     private int clickCount = 0;
     private int bezierDegree = 3; // Grau padrão 3
+    private int tamanhoCoordenadas = 11; // Valor padrão para coordenadas (-11 a 11)
     private String selectedAlgorithm = "";
     private ArrayList<Ponto> pontosDesenho = new ArrayList<>();
     private ArrayList<Ponto> pontosEntrada = new ArrayList<>(); // Armazenar pontos de entrada do usuário
@@ -47,6 +48,11 @@ public class PainelDesenho extends JPanel {
         this.bezierDegree = degree;
     }
 
+    public void setTamanhoCoordenadas(int tamanho) {
+        this.tamanhoCoordenadas = tamanho;
+        repaint();    // Redesenhar com o novo tamanho
+    }
+
     public void clearScreen() {
         pontosDesenho.clear();
         pontosEntrada.clear(); // Limpar pontos de entrada
@@ -54,14 +60,17 @@ public class PainelDesenho extends JPanel {
         repaint();
     }
 
+    private int converterParaCoordenadaCartesiana(int valorPixel, int tamanhoPainel, int tamanhoCoordenadas) {
+        int centro = tamanhoPainel / 2;
+        return (valorPixel - centro) / (tamanhoPainel / (tamanhoCoordenadas * 2));
+    }
+
     private void handleBresenhamClick(MouseEvent e) {
         int mouseX = e.getX();
         int mouseY = e.getY();
 
-        int centerX = getWidth() / 2;
-        int centerY = getHeight() / 2;
-        int gridX = (mouseX - centerX) / (getWidth() / 22);
-        int gridY = (centerY - mouseY) / (getHeight() / 22);
+        int gridX = converterParaCoordenadaCartesiana(mouseX, getWidth(), tamanhoCoordenadas);
+        int gridY = converterParaCoordenadaCartesiana(getHeight() - mouseY, getHeight(), tamanhoCoordenadas);
 
         if (clickCount == 0) {
             x1 = gridX;
@@ -82,10 +91,8 @@ public class PainelDesenho extends JPanel {
         int mouseX = e.getX();
         int mouseY = e.getY();
 
-        int centerX = getWidth() / 2;
-        int centerY = getHeight() / 2;
-        int gridX = (mouseX - centerX) / (getWidth() / 22);
-        int gridY = (centerY - mouseY) / (getHeight() / 22);
+        int gridX = converterParaCoordenadaCartesiana(mouseX, getWidth(), tamanhoCoordenadas);
+        int gridY = converterParaCoordenadaCartesiana(getHeight() - mouseY, getHeight(), tamanhoCoordenadas);
 
         pontosEntrada.add(new Ponto(gridX, gridY)); // Adicionar ponto de entrada para o centro do círculo
 
@@ -105,10 +112,8 @@ public class PainelDesenho extends JPanel {
         int mouseX = e.getX();
         int mouseY = e.getY();
 
-        int centerX = getWidth() / 2;
-        int centerY = getHeight() / 2;
-        int gridX = (mouseX - centerX) / (getWidth() / 22);
-        int gridY = (centerY - mouseY) / (getHeight() / 22);
+        int gridX = converterParaCoordenadaCartesiana(mouseX, getWidth(), tamanhoCoordenadas);
+        int gridY = converterParaCoordenadaCartesiana(getHeight() - mouseY, getHeight(), tamanhoCoordenadas);
 
         if (bezierDegree == 2) {
             if (clickCount == 0) {
@@ -196,9 +201,9 @@ public class PainelDesenho extends JPanel {
         g2d.fillRect(0, 0, width, height);
 
         g2d.setColor(Color.GREEN);
-        for (int i = -11; i <= 11; i++) {
-            int x = width / 2 + i * (width / 22);
-            int y = height / 2 - i * (height / 22);
+        for (int i = -tamanhoCoordenadas; i <= tamanhoCoordenadas; i++) {
+            int x = width / 2 + i * (width / (tamanhoCoordenadas * 2));
+            int y = height / 2 - i * (height / (tamanhoCoordenadas * 2));
             g2d.drawLine(x, 0, x, height); // Linhas verticais
             g2d.drawLine(0, y, width, y); // Linhas horizontais
         }
@@ -210,16 +215,16 @@ public class PainelDesenho extends JPanel {
         // Desenhar pontos destacados de entrada
         g2d.setColor(Color.BLUE);
         for (Ponto ponto : pontosEntrada) {
-            int screenX = width / 2 + ponto.getX() * (width / 22);
-            int screenY = height / 2 - ponto.getY() * (height / 22);
+            int screenX = width / 2 + ponto.getX() * (width / (tamanhoCoordenadas * 2));
+            int screenY = height / 2 - ponto.getY() * (height / (tamanhoCoordenadas * 2));
             g2d.fillOval(screenX - 5, screenY - 5, 10, 10); // Desenhar ponto de entrada como um círculo maior
         }
 
         // Desenhar pontos do desenho final
         g2d.setColor(Color.RED);
         for (Ponto ponto : pontosDesenho) {
-            int screenX = width / 2 + ponto.getX() * (width / 22);
-            int screenY = height / 2 - ponto.getY() * (height / 22);
+            int screenX = width / 2 + ponto.getX() * (width / (tamanhoCoordenadas * 2));
+            int screenY = height / 2 - ponto.getY() * (height / (tamanhoCoordenadas * 2));
             g2d.fillRect(screenX - 2, screenY - 2, 5, 5);
         }
     }
