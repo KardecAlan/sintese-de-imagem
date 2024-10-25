@@ -17,8 +17,10 @@ public class PainelDesenho extends JPanel {
     private int bezierDegree = 3; // Grau padrão 3
     private String selectedAlgorithm = "";
     private ArrayList<Ponto> pontosDesenho = new ArrayList<>();
+    private JTextArea coordenadasArea;
 
-    public PainelDesenho() {
+    public PainelDesenho(JTextArea coordenadasArea) {
+        this.coordenadasArea = coordenadasArea;
         addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -36,6 +38,7 @@ public class PainelDesenho extends JPanel {
     public void setAlgorithm(String algorithm) {
         this.selectedAlgorithm = algorithm;
         this.clickCount = 0; // Resetar o contador de cliques ao mudar o algoritmo
+        coordenadasArea.setText(""); // Limpar coordenadas quando mudar o algoritmo
     }
 
     public void setBezierDegree(int degree) {
@@ -44,6 +47,7 @@ public class PainelDesenho extends JPanel {
 
     public void clearScreen() {
         pontosDesenho.clear();
+        coordenadasArea.setText(""); // Limpar a área de texto
         repaint();
     }
 
@@ -51,7 +55,6 @@ public class PainelDesenho extends JPanel {
         int mouseX = e.getX();
         int mouseY = e.getY();
 
-        // Converter coordenadas de tela para coordenadas do sistema cartesiano centrado
         int centerX = getWidth() / 2;
         int centerY = getHeight() / 2;
         int gridX = (mouseX - centerX) / (getWidth() / 22);
@@ -138,19 +141,30 @@ public class PainelDesenho extends JPanel {
     private void executeBresenham(Ponto p1, Ponto p2) {
         Bresenham bresenham = new Bresenham(p1, p2);
         pontosDesenho = bresenham.getPontos();
+        updateCoordenadasArea(pontosDesenho);
         repaint();
     }
 
     private void executeCirculo(int raio, Ponto centro) {
         Circulo circulo = new Circulo(raio, centro);
         pontosDesenho = circulo.getPontos();
+        updateCoordenadasArea(pontosDesenho);
         repaint();
     }
 
     private void executeCurvas(Ponto pInicial, Ponto controle1, Ponto controle2, Ponto pFinal) {
         Curvas curvas = new Curvas(pInicial, controle1, controle2, pFinal);
         pontosDesenho = curvas.getPontos();
+        updateCoordenadasArea(pontosDesenho);
         repaint();
+    }
+
+    private void updateCoordenadasArea(ArrayList<Ponto> pontos) {
+        StringBuilder sb = new StringBuilder();
+        for (Ponto ponto : pontos) {
+            sb.append("(").append(ponto.getX()).append(", ").append(ponto.getY()).append(")\n");
+        }
+        coordenadasArea.setText(sb.toString());
     }
 
     @Override
