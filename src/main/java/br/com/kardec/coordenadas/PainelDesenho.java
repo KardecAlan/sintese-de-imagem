@@ -1,9 +1,6 @@
 package br.com.kardec.coordenadas;
 
-import br.com.kardec.algoritmos.Bresenham;
-import br.com.kardec.algoritmos.Circulo;
-import br.com.kardec.algoritmos.Curvas;
-import br.com.kardec.algoritmos.Ponto;
+import br.com.kardec.algoritmos.*;
 
 import javax.swing.*;
 import java.awt.*;
@@ -19,6 +16,7 @@ public class PainelDesenho extends JPanel {
     private String selectedAlgorithm = "";
     private ArrayList<Ponto> pontosDesenho = new ArrayList<>();
     private ArrayList<Ponto> pontosEntrada = new ArrayList<>(); // Armazenar pontos de entrada do usuário
+    private ArrayList<Ponto> polilinhaPontos = new ArrayList<>();
     private JTextArea coordenadasArea;
 
     public PainelDesenho(JTextArea coordenadasArea) {
@@ -32,6 +30,8 @@ public class PainelDesenho extends JPanel {
                     handleCirculoClick(e);
                 } else if (selectedAlgorithm.equals("Curvas")) {
                     handleCurvasClick(e);
+                } else if (selectedAlgorithm.equals("Polilinhas")) {
+                    handlePolilinhasClick(e);
                 }
             }
         });
@@ -41,6 +41,7 @@ public class PainelDesenho extends JPanel {
         this.selectedAlgorithm = algorithm;
         this.clickCount = 0; // Resetar o contador de cliques ao mudar o algoritmo
         pontosEntrada.clear(); // Limpar pontos de entrada quando mudar o algoritmo
+        polilinhaPontos.clear(); // Limpar pontos da polilinha
         coordenadasArea.setText(""); // Limpar coordenadas quando mudar o algoritmo
     }
 
@@ -50,12 +51,14 @@ public class PainelDesenho extends JPanel {
 
     public void setTamanhoCoordenadas(int tamanho) {
         this.tamanhoCoordenadas = tamanho;
+        revalidate(); // Forçar atualização da interface
         repaint();    // Redesenhar com o novo tamanho
     }
 
     public void clearScreen() {
         pontosDesenho.clear();
         pontosEntrada.clear(); // Limpar pontos de entrada
+        polilinhaPontos.clear(); // Limpar pontos da polilinha
         coordenadasArea.setText(""); // Limpar a área de texto
         repaint();
     }
@@ -64,6 +67,33 @@ public class PainelDesenho extends JPanel {
         int centro = tamanhoPainel / 2;
         return (valorPixel - centro) / (tamanhoPainel / (tamanhoCoordenadas * 2));
     }
+
+    private void handlePolilinhasClick(MouseEvent e) {
+        int mouseX = e.getX();
+        int mouseY = e.getY();
+
+        int gridX = converterParaCoordenadaCartesiana(mouseX, getWidth(), tamanhoCoordenadas);
+        int gridY = converterParaCoordenadaCartesiana(getHeight() - mouseY, getHeight(), tamanhoCoordenadas);
+
+        // Adicionar o ponto clicado para a polilinha
+        polilinhaPontos.add(new Ponto(gridX, gridY));
+        pontosEntrada.add(new Ponto(gridX, gridY)); // Adicionar ponto de entrada para destacar
+
+        // Verificar se o botão direito foi pressionado para finalizar a polilinha
+        if (SwingUtilities.isRightMouseButton(e)) {
+            if (polilinhaPontos.size() >= 4) { // Garantir que haja pelo menos 4 pontos
+                executePolilinhas(polilinhaPontos);
+                polilinhaPontos.clear();
+                pontosEntrada.clear();
+            } else {
+                JOptionPane.showMessageDialog(this, "Por favor, selecione pelo menos 4 pontos para formar uma polilinha.");
+            }
+        }
+
+        repaint(); // Atualizar para destacar os pontos de entrada
+    }
+
+
 
     private void handleBresenhamClick(MouseEvent e) {
         int mouseX = e.getX();
@@ -180,6 +210,16 @@ public class PainelDesenho extends JPanel {
         updateCoordenadasArea(pontosDesenho);
         repaint();
     }
+
+    private void executePolilinhas(ArrayList<Ponto> pontos) {
+        Polilinhas polilinhas = new Polilinhas(pontos);
+        pontosDesenho.clear();  // Limpar a lista antes de adicionar novos pontos
+        pontosDesenho.addAll(polilinhas.getPontos());
+        updateCoordenadasArea(pontosDesenho);
+        repaint();
+    }
+
+
 
     private void updateCoordenadasArea(ArrayList<Ponto> pontos) {
         StringBuilder sb = new StringBuilder();

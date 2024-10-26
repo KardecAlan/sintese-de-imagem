@@ -37,6 +37,10 @@ public class CordenadasApp {
             painelDesenho.setAlgorithm("Curvas");
         });
 
+        // Botão para selecionar Polilinhas
+        JButton polilinhasButton = new JButton("Polilinhas");
+        polilinhasButton.addActionListener(e -> painelDesenho.setAlgorithm("Polilinhas"));
+
         // Botão para limpar a tela
         JButton clearButton = new JButton("Limpar");
         clearButton.addActionListener(e -> painelDesenho.clearScreen());
@@ -62,6 +66,7 @@ public class CordenadasApp {
         controlPanel.add(bresenhamButton);
         controlPanel.add(circuloButton);
         controlPanel.add(curvasButton);
+        controlPanel.add(polilinhasButton);
         controlPanel.add(clearButton);
         controlPanel.add(definirTamanhoButton);
 
