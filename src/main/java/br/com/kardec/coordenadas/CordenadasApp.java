@@ -24,15 +24,15 @@ public class CordenadasApp {
         bresenhamButton.addActionListener(e -> painelDesenho.setAlgorithm("Bresenham"));
 
         // Botão para selecionar Circulo
-        JButton circuloButton = new JButton("Circulo");
+        JButton circuloButton = new JButton("Círculo");
         circuloButton.addActionListener(e -> painelDesenho.setAlgorithm("Circulo"));
 
-        // Botão para selecionar Curvas
-        JButton curvasButton = new JButton("Curvas");
+        // Botão para selecionar Curvas de Bézier
+        JButton curvasButton = new JButton("Curvas de Bézier");
         curvasButton.addActionListener(e -> {
             String[] options = {"Grau 2", "Grau 3"};
-            int response = JOptionPane.showOptionDialog(null, "Escolha o tipo de curva Bezier:",
-                    "Curva Bezier", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null, options, options[0]);
+            int response = JOptionPane.showOptionDialog(null, "Escolha o grau da curva Bézier:",
+                    "Curva Bézier", JOptionPane.DEFAULT_OPTION, JOptionPane.INFORMATION_MESSAGE, null, options, options[0]);
             painelDesenho.setBezierDegree(response == 0 ? 2 : 3);
             painelDesenho.setAlgorithm("Curvas");
         });
@@ -41,36 +41,36 @@ public class CordenadasApp {
         JButton polilinhasButton = new JButton("Polilinhas");
         polilinhasButton.addActionListener(e -> painelDesenho.setAlgorithm("Polilinhas"));
 
+        // Botão para selecionar Preenchimento Recursivo
+        JButton recursivoButton = new JButton("Preenchimento Recursivo");
+        recursivoButton.addActionListener(e -> painelDesenho.setAlgorithm("Recursivo"));
+
+        // Botão para selecionar Varredura
+        JButton varreduraButton = new JButton("Preenchimento Varredura");
+        varreduraButton.addActionListener(e -> painelDesenho.setAlgorithm("Varredura"));
+
+        // Botão para selecionar Recorte de Linha
+        JButton recorteButton = new JButton("Recorte de Linha");
+        recorteButton.addActionListener(e -> painelDesenho.setAlgorithm("Recorte"));
+
+        // Adicionar o botão ao painel de controle
+        controlPanel.add(recorteButton);
+
+
         // Botão para limpar a tela
-        JButton clearButton = new JButton("Limpar");
+        JButton clearButton = new JButton("Limpar Tela");
         clearButton.addActionListener(e -> painelDesenho.clearScreen());
 
-        // Botão para definir o tamanho da tela de coordenadas
-        JButton definirTamanhoButton = new JButton("Definir Tamanho da Tela");
-        definirTamanhoButton.addActionListener(e -> {
-            String input = JOptionPane.showInputDialog("Digite o valor máximo das coordenadas (exemplo: 20 para -20 a 20):");
-            if (input != null) {
-                try {
-                    int tamanho = Integer.parseInt(input);
-                    if (tamanho > 0) {
-                        painelDesenho.setTamanhoCoordenadas(tamanho);
-                    } else {
-                        JOptionPane.showMessageDialog(null, "Por favor, insira um número positivo.");
-                    }
-                } catch (NumberFormatException ex) {
-                    JOptionPane.showMessageDialog(null, "Por favor, insira um número válido.");
-                }
-            }
-        });
-
+        // Adicionar todos os botões ao painel de controle
         controlPanel.add(bresenhamButton);
         controlPanel.add(circuloButton);
         controlPanel.add(curvasButton);
         controlPanel.add(polilinhasButton);
+        controlPanel.add(recursivoButton);
+        controlPanel.add(varreduraButton);
         controlPanel.add(clearButton);
-        controlPanel.add(definirTamanhoButton);
 
-        // Adicionar a área de texto para exibir coordenadas
+        // Adicionar a área de texto para exibir coordenadas dos pontos
         controlPanel.add(new JLabel("Coordenadas dos Pontos:"));
         JScrollPane scrollPane = new JScrollPane(coordenadasArea);
         scrollPane.setPreferredSize(new Dimension(180, 200));
@@ -79,6 +79,7 @@ public class CordenadasApp {
         // Usar JSplitPane para permitir redimensionamento
         JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, painelDesenho, controlPanel);
         splitPane.setDividerLocation(600);
+
         frame.add(splitPane);
         frame.setVisible(true);
     }
