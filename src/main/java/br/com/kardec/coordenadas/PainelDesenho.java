@@ -17,13 +17,13 @@ public class PainelDesenho extends JPanel {
     private ArrayList<Ponto> pontosDesenho = new ArrayList<>();
     private final ArrayList<Ponto> pontosEntrada = new ArrayList<>();
     private final ArrayList<Ponto> polilinhaPontos = new ArrayList<>();
+    private final ArrayList<Ponto[]> linhasDesenhadas = new ArrayList<>();
     private final JTextArea coordenadasArea;
     private BufferedImage canvas;
     private int clickCount = 0;
     private int x1, y1, x2, y2, x3, y3, x4, y4;
     private int bezierDegree = 3; // Grau padrão para curvas de Bézier
-    private Ponto recorteCantoSuperiorEsquerdo;
-    private Ponto recorteCantoInferiorDireito;
+    private Ponto recorteCanto1, recorteCanto2;
     private boolean definindoRecorte = false; // Controla se estamos definindo a janela de recorte
 
 
@@ -31,6 +31,7 @@ public class PainelDesenho extends JPanel {
     public PainelDesenho(JTextArea coordenadasArea) {
         this.coordenadasArea = coordenadasArea;
         inicializarCanvas();
+
         addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -38,24 +39,17 @@ public class PainelDesenho extends JPanel {
                 int gridY = e.getY() / PIXEL_SIZE;
 
                 if (definindoRecorte) {
-                    // Define os pontos da janela de recorte
                     if (clickCount == 0) {
-                        recorteCantoSuperiorEsquerdo = new Ponto(gridX, gridY);
+                        recorteCanto1 = new Ponto(gridX, gridY);
                         clickCount++;
                     } else if (clickCount == 1) {
-                        recorteCantoInferiorDireito = new Ponto(gridX, gridY);
+                        recorteCanto2 = new Ponto(gridX, gridY);
                         clickCount = 0;
-                        definindoRecorte = false; // Termina a definição da janela de recorte
-
-                        // Executa o recorte da linha
-                        if (pontosEntrada.size() >= 2) { // Verifica se há uma linha desenhada
-                            Ponto p1 = pontosEntrada.get(0);
-                            Ponto p2 = pontosEntrada.get(1);
-                            recorte(p1, p2, recorteCantoSuperiorEsquerdo, recorteCantoInferiorDireito);
-                        }
+                        definindoRecorte = false;
+                        aplicarRecorte();
                     }
                 } else {
-                    // Lida com os cliques para desenhar a linha, círculo, curvas, etc.
+                    // Manipulação dos cliques para desenho de linhas e algoritmos
                     switch (selectedAlgorithm) {
                         case "Bresenham" -> handleBresenhamClick(e);
                         case "Circulo" -> handleCirculoClick(e);
@@ -67,25 +61,8 @@ public class PainelDesenho extends JPanel {
                 }
                 repaint();
             }
-
         });
     }
-
-    public void recorte(Ponto p1, Ponto p2, Ponto cantoSuperiorEsquerdo, Ponto cantoInferiorDireito) {
-        int xMin = Math.min(cantoSuperiorEsquerdo.getX(), cantoInferiorDireito.getX());
-        int yMin = Math.min(cantoSuperiorEsquerdo.getY(), cantoInferiorDireito.getY());
-        int xMax = Math.max(cantoSuperiorEsquerdo.getX(), cantoInferiorDireito.getX());
-        int yMax = Math.max(cantoSuperiorEsquerdo.getY(), cantoInferiorDireito.getY());
-
-        RecorteDeLinha recorte = new RecorteDeLinha(xMin, yMin, xMax, yMax);
-        ArrayList<Ponto> pontosRecortados = recorte.recortarLinha(p1.getX(), p1.getY(), p2.getX(), p2.getY());
-
-        pontosDesenho.clear();
-        pontosDesenho.addAll(pontosRecortados);
-        updateCoordenadasArea(pontosRecortados);
-        repaint();
-    }
-
 
     // Inicializa o canvas para o tamanho da grade
     private void inicializarCanvas() {
@@ -100,17 +77,40 @@ public class PainelDesenho extends JPanel {
 
     public void setAlgorithm(String algorithm) {
         this.selectedAlgorithm = algorithm;
-        pontosEntrada.clear();
-        polilinhaPontos.clear();
+        pontosDesenho.clear();
         coordenadasArea.setText("");
 
-        if ("Recorte".equals(algorithm)) {
-            definindoRecorte = true; // Ativa o modo de definição da janela de recorte
-            clickCount = 0; // Reseta o contador de cliques para a definição dos pontos de recorte
+        if ("Recorte".equals(selectedAlgorithm)) {
+            definindoRecorte = true;
+            clickCount = 0;
+            JOptionPane.showMessageDialog(this, "Clique para definir os pontos da área de recorte.");
         } else {
             definindoRecorte = false;
         }
     }
+
+    private void aplicarRecorte() {
+        int xMin = Math.min(recorteCanto1.getX(), recorteCanto2.getX());
+        int yMin = Math.min(recorteCanto1.getY(), recorteCanto2.getY());
+        int xMax = Math.max(recorteCanto1.getX(), recorteCanto2.getX());
+        int yMax = Math.max(recorteCanto1.getY(), recorteCanto2.getY());
+
+        RecorteDeLinha recorte = new RecorteDeLinha(xMin, yMin, xMax, yMax);
+        ArrayList<Ponto[]> linhasRecortadas = new ArrayList<>();
+
+        for (Ponto[] linha : linhasDesenhadas) {
+            ArrayList<Ponto> linhaRecortada = recorte.recortarLinha(linha[0], linha[1]);
+
+            if (linhaRecortada.size() == 2) {
+                linhasRecortadas.add(new Ponto[]{linhaRecortada.get(0), linhaRecortada.get(1)});
+            }
+        }
+
+        linhasDesenhadas.clear();
+        linhasDesenhadas.addAll(linhasRecortadas);
+        updateCoordenadasArea();
+    }
+
 
     public void setBezierDegree(int degree) {
         this.bezierDegree = degree;
@@ -130,31 +130,26 @@ public class PainelDesenho extends JPanel {
         repaint();
     }
 
-//    public void setPixelGridSize(int larguraPixels, int alturaPixels) {
-//        this.larguraPixels = larguraPixels;
-//        this.alturaPixels = alturaPixels;
-//        canvas = null; // Redefine o canvas para o novo tamanho
-//        inicializarCanvas();
-//        repaint();
-//    }
 
     private void handleBresenhamClick(MouseEvent e) {
         int gridX = e.getX() / PIXEL_SIZE;
         int gridY = e.getY() / PIXEL_SIZE;
 
         if (clickCount == 0) {
-            x1 = gridX;
-            y1 = gridY;
-            pontosEntrada.add(new Ponto(x1, y1));
+            recorteCanto1 = new Ponto(gridX, gridY);
             clickCount++;
         } else {
-            x2 = gridX;
-            y2 = gridY;
-            pontosEntrada.add(new Ponto(x2, y2));
+            recorteCanto2 = new Ponto(gridX, gridY);
             clickCount = 0;
-            executeBresenham(new Ponto(x1, y1), new Ponto(x2, y2));
+            desenharLinha(new Ponto(recorteCanto1.getX(), recorteCanto1.getY()), new Ponto(recorteCanto2.getX(), recorteCanto2.getY()));
         }
-        repaint();
+    }
+
+    private void desenharLinha(Ponto p1, Ponto p2) {
+        Bresenham bresenham = new Bresenham(p1, p2);
+        pontosDesenho = bresenham.getPontos();
+        linhasDesenhadas.add(new Ponto[]{p1, p2});
+        updateCoordenadasArea();
     }
 
     private void handleCirculoClick(MouseEvent e) {
@@ -259,71 +254,37 @@ public class PainelDesenho extends JPanel {
         repaint();
     }
 
-    private void handleRecorteClick(MouseEvent e) {
-        int gridX = e.getX() / PIXEL_SIZE;
-        int gridY = e.getY() / PIXEL_SIZE;
 
-        if (clickCount == 0) {
-            x1 = gridX;
-            y1 = gridY;
-            pontosEntrada.add(new Ponto(x1, y1));
-            clickCount++;
-        } else {
-            x2 = gridX;
-            y2 = gridY;
-            pontosEntrada.add(new Ponto(x2, y2));
-            clickCount = 0;
-
-            // Definindo os limites da janela de recorte
-            int xMin = 5;   // Coordenada mínima x da janela de recorte
-            int yMin = 5;   // Coordenada mínima y da janela de recorte
-            int xMax = 20;  // Coordenada máxima x da janela de recorte
-            int yMax = 15;  // Coordenada máxima y da janela de recorte
-
-            RecorteDeLinha recorte = new RecorteDeLinha(xMin, yMin, xMax, yMax);
-            ArrayList<Ponto> pontosRecortados = recorte.recortarLinha(x1, y1, x2, y2);
-
-            pontosDesenho.clear();
-            pontosDesenho.addAll(pontosRecortados);
-            updateCoordenadasArea(pontosRecortados);
-            repaint();
-        }
-    }
-
-
-
-
-
-
-    private void executeBresenham(Ponto p1, Ponto p2) {
-        Bresenham bresenham = new Bresenham(p1, p2);
-        pontosDesenho = bresenham.getPontos();
-        updateCoordenadasArea(pontosDesenho);
-    }
+//    private void executeBresenham(Ponto p1, Ponto p2) {
+//        Bresenham bresenham = new Bresenham(p1, p2);
+//        pontosDesenho = bresenham.getPontos();
+////        updateCoordenadasArea(pontosDesenho);
+//    }
 
     private void executeCirculo(int raio, Ponto centro) {
         Circulo circulo = new Circulo(raio, centro);
         pontosDesenho = circulo.getPontos();
-        updateCoordenadasArea(pontosDesenho);
+//        updateCoordenadasArea(pontosDesenho);
     }
 
     private void executeCurvas(Ponto pInicial, Ponto controle1, Ponto controle2, Ponto pFinal) {
         Curvas curvas = new Curvas(pInicial, controle1, controle2, pFinal);
         pontosDesenho = curvas.getPontos();
-        updateCoordenadasArea(pontosDesenho);
+//        updateCoordenadasArea(pontosDesenho);
     }
 
     private void executePolilinhas(ArrayList<Ponto> pontos) {
         Polilinhas polilinhas = new Polilinhas(pontos);
         pontosDesenho.clear();
         pontosDesenho.addAll(polilinhas.getPontos());
-        updateCoordenadasArea(pontosDesenho);
+//        updateCoordenadasArea(pontosDesenho);
     }
 
-    private void updateCoordenadasArea(ArrayList<Ponto> pontos) {
+    private void updateCoordenadasArea() {
         StringBuilder sb = new StringBuilder();
-        for (Ponto ponto : pontos) {
-            sb.append("(").append(ponto.getX()).append(", ").append(ponto.getY()).append(")\n");
+        for (Ponto[] linha : linhasDesenhadas) {
+            sb.append("(").append(linha[0].getX()).append(", ").append(linha[0].getY()).append(") -> ")
+                    .append("(").append(linha[1].getX()).append(", ").append(linha[1].getY()).append(")\n");
         }
         coordenadasArea.setText(sb.toString());
     }
@@ -361,6 +322,27 @@ public class PainelDesenho extends JPanel {
             int screenY = ponto.getY() * PIXEL_SIZE;
             g2d.fillRect(screenX, screenY, PIXEL_SIZE, PIXEL_SIZE);
         }
+
+        // Desenha pontos da área de recorte
+        if (recorteCanto1 != null) {
+            g2d.setColor(Color.GREEN);
+            g2d.fillRect(recorteCanto1.getX() * PIXEL_SIZE, recorteCanto1.getY() * PIXEL_SIZE, PIXEL_SIZE, PIXEL_SIZE);
+        }
+        if (recorteCanto2 != null) {
+            g2d.setColor(Color.GREEN);
+            g2d.fillRect(recorteCanto2.getX() * PIXEL_SIZE, recorteCanto2.getY() * PIXEL_SIZE, PIXEL_SIZE, PIXEL_SIZE);
+        }
+
+        // Desenhar linhas recortadas
+        g2d.setColor(Color.RED);
+        for (Ponto[] linha : linhasDesenhadas) {
+            int x1 = linha[0].getX() * PIXEL_SIZE;
+            int y1 = linha[0].getY() * PIXEL_SIZE;
+            int x2 = linha[1].getX() * PIXEL_SIZE;
+            int y2 = linha[1].getY() * PIXEL_SIZE;
+            g2d.drawLine(x1, y1, x2, y2);
+        }
+
     }
 
 }

@@ -11,7 +11,16 @@ public class RecorteDeLinha {
 
     private int xMin, yMin, xMax, yMax;
 
+//    public RecorteDeLinha(Ponto ponto1, Ponto ponto2) {
+//        // Define os limites de recorte com os pontos que o usuário clicar
+//        this.xMin = Math.min(ponto1.getX(), ponto2.getX());
+//        this.yMin = Math.min(ponto1.getY(), ponto2.getY());
+//        this.xMax = Math.max(ponto1.getX(), ponto2.getX());
+//        this.yMax = Math.max(ponto1.getY(), ponto2.getY());
+//    }
+
     public RecorteDeLinha(int xMin, int yMin, int xMax, int yMax) {
+        // Define os limites de recorte com os pontos que o usuário clicar
         this.xMin = xMin;
         this.yMin = yMin;
         this.xMax = xMax;
@@ -27,7 +36,9 @@ public class RecorteDeLinha {
         return code;
     }
 
-    public ArrayList<Ponto> recortarLinha(int x1, int y1, int x2, int y2) {
+    public ArrayList<Ponto> recortarLinha(Ponto p1, Ponto p2) {
+        int x1 = p1.getX(), y1 = p1.getY();
+        int x2 = p2.getX(), y2 = p2.getY();
         int code1 = computeCode(x1, y1);
         int code2 = computeCode(x2, y2);
         boolean accept = false;
