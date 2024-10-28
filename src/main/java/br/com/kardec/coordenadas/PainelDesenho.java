@@ -18,6 +18,7 @@ public class PainelDesenho extends JPanel {
     private final ArrayList<Ponto> pontosEntrada = new ArrayList<>();
     private final ArrayList<Ponto> polilinhaPontos = new ArrayList<>();
     private final ArrayList<Ponto[]> linhasDesenhadas = new ArrayList<>();
+    private ArrayList<Ponto> pontosClicados = new ArrayList<>();
     private final JTextArea coordenadasArea;
     private BufferedImage canvas;
     private int clickCount = 0;
@@ -138,13 +139,17 @@ public class PainelDesenho extends JPanel {
     private void handleElipseClick(int gridX, int gridY) {
         if (clickCount == 0) {
             centroElipse = new Ponto(gridX, gridY);
+            pontosClicados.add(centroElipse); // Adiciona o centro aos pontos temporários
             clickCount++;
             JOptionPane.showMessageDialog(this, "Clique para definir os raios da elipse.");
         } else if (clickCount == 1) {
             raioX = Math.abs(gridX - centroElipse.getX());
             raioY = Math.abs(gridY - centroElipse.getY());
+            Ponto pontoRaio = new Ponto(gridX, gridY);
+            pontosClicados.add(pontoRaio); // Adiciona o ponto do raio aos pontos temporários
             executeElipse(raioX, raioY, centroElipse);
             clickCount = 0;
+            pontosClicados.clear(); // Limpa os pontos temporários após desenhar a elipse
         }
     }
 
@@ -357,6 +362,21 @@ public class PainelDesenho extends JPanel {
             g2d.drawLine(x1, y1, x2, y2);
         }
         // Desenha pontos do desenho como pixels em vez de linhas
+        for (Ponto ponto : pontosDesenho) {
+            int screenX = ponto.getX() * PIXEL_SIZE;
+            int screenY = ponto.getY() * PIXEL_SIZE;
+            g2d.fillRect(screenX, screenY, PIXEL_SIZE, PIXEL_SIZE);
+        }
+        // Desenhar os pontos que o usuário clicou em azul
+        g2d.setColor(Color.BLUE);
+        for (Ponto ponto : pontosClicados) {
+            int screenX = ponto.getX() * PIXEL_SIZE;
+            int screenY = ponto.getY() * PIXEL_SIZE;
+            g2d.fillOval(screenX, screenY, PIXEL_SIZE, PIXEL_SIZE);
+        }
+
+        // Desenhar a elipse final em vermelho
+        g2d.setColor(Color.RED);
         for (Ponto ponto : pontosDesenho) {
             int screenX = ponto.getX() * PIXEL_SIZE;
             int screenY = ponto.getY() * PIXEL_SIZE;
