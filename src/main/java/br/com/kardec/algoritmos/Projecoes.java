@@ -30,10 +30,18 @@ public class Projecoes {
         ArrayList<Ponto> pontos2D = new ArrayList<>();
 
         for (Ponto3D ponto : pontos3D) {
+            // Calcula a projeção em perspectiva
             double fator = distancia / (distancia + ponto.getZ());
             int x = (int) (ponto.getX() * fator);
             int y = (int) (ponto.getY() * fator);
-            pontos2D.add(new Ponto(x, y));
+            Ponto pontoProjetado = new Ponto(x, y);
+
+            // Cria o rastro usando Bresenham entre o ponto original e o ponto projetado
+            Bresenham bresenham = new Bresenham(new Ponto(ponto.getX(), ponto.getY()), pontoProjetado);
+            pontos2D.addAll(bresenham.getPontos()); // Adiciona o rastro
+
+            // Adiciona o ponto projetado final
+            pontos2D.add(pontoProjetado);
         }
         return pontos2D;
     }
