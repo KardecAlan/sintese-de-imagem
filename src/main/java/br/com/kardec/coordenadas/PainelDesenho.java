@@ -25,6 +25,8 @@ public class PainelDesenho extends JPanel {
     private int bezierDegree = 3; // Grau padrão para curvas de Bézier
     private Ponto recorteCanto1, recorteCanto2;
     private boolean definindoRecorte = false; // Controla se estamos definindo a janela de recorte
+    private int raioX, raioY;
+    private Ponto centroElipse;
 
 
 
@@ -52,6 +54,7 @@ public class PainelDesenho extends JPanel {
                     switch (selectedAlgorithm) {
                         case "Bresenham" -> handleBresenhamClick(e);
                         case "Circulo" -> handleCirculoClick(e);
+                        case "Elipse" -> handleElipseClick(gridX, gridY);
                         case "Curvas" -> handleCurvasClick(e);
                         case "Polilinhas" -> handlePolilinhasClick(e);
                         case "Recursivo" -> handlePreenchimentoRecursivoClick(e);
@@ -130,6 +133,25 @@ public class PainelDesenho extends JPanel {
         pontosDesenho.clear();
         pontosDesenho.addAll(pontosRecortados);
         updateCoordenadasArea(pontosRecortados);
+    }
+
+    private void handleElipseClick(int gridX, int gridY) {
+        if (clickCount == 0) {
+            centroElipse = new Ponto(gridX, gridY);
+            clickCount++;
+            JOptionPane.showMessageDialog(this, "Clique para definir os raios da elipse.");
+        } else if (clickCount == 1) {
+            raioX = Math.abs(gridX - centroElipse.getX());
+            raioY = Math.abs(gridY - centroElipse.getY());
+            executeElipse(raioX, raioY, centroElipse);
+            clickCount = 0;
+        }
+    }
+
+    private void executeElipse(int raioX, int raioY, Ponto centro) {
+        Elipse elipse = new Elipse(raioX, raioY, centro);
+        pontosDesenho = elipse.getPontos();
+        updateCoordenadasArea(pontosDesenho);
     }
 
     private void handleBresenhamClick(MouseEvent e) {

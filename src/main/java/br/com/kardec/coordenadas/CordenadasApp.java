@@ -26,6 +26,9 @@ public class CordenadasApp {
         JButton circuloButton = new JButton("Círculo");
         circuloButton.addActionListener(e -> painelDesenho.setAlgorithm("Circulo"));
 
+        JButton elipseButton = new JButton("Elipse"); // Botão para Elipse
+        elipseButton.addActionListener(e -> painelDesenho.setAlgorithm("Elipse"));
+
         JButton curvasButton = new JButton("Curvas de Bézier");
         curvasButton.addActionListener(e -> {
             String[] options = {"Grau 2", "Grau 3"};
@@ -55,6 +58,7 @@ public class CordenadasApp {
         // Adicionar todos os botões ao painel de controle
         controlPanel.add(bresenhamButton);
         controlPanel.add(circuloButton);
+        controlPanel.add(elipseButton); // Adiciona botão de Elipse
         controlPanel.add(curvasButton);
         controlPanel.add(polilinhasButton);
         controlPanel.add(recursivoButton);
