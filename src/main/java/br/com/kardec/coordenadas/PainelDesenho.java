@@ -30,6 +30,8 @@ public class PainelDesenho extends JPanel {
     private boolean definindoRecorte = false; // Controla se estamos definindo a janela de recorte
     private int raioX, raioY;
     private Ponto centroElipse;
+    private ArrayList<Ponto3D> pontosSolido3D = new ArrayList<>(); // Para armazenar os vértices 3D
+    private ArrayList<Ponto> pontosProjetados = new ArrayList<>(); // Para armazenar os pontos projetados em 2D
 
 
 
@@ -78,6 +80,53 @@ public class PainelDesenho extends JPanel {
 
     public void setBezierDegree(int degree) {
         this.bezierDegree = degree;
+    }
+
+    // Meodo para definir pontos do sólido
+    void definirPontosSolido3D() {
+        while (true) {
+            int x = Integer.parseInt(JOptionPane.showInputDialog("Digite a coordenada X do ponto 3D (ou cancelar para terminar):"));
+            int y = Integer.parseInt(JOptionPane.showInputDialog("Digite a coordenada Y do ponto 3D:"));
+            int z = Integer.parseInt(JOptionPane.showInputDialog("Digite a coordenada Z do ponto 3D:"));
+            pontosSolido3D.add(new Ponto3D(x, y, z));
+
+            int resposta = JOptionPane.showConfirmDialog(this, "Deseja adicionar mais pontos?");
+            if (resposta != JOptionPane.YES_OPTION) {
+                break;
+            }
+        }
+    }
+
+    // Meétodo para aplicar projeção ortográfica
+    void aplicarProjecaoOrtografica() {
+        pontosProjetados = Projecoes.ortografica(pontosSolido3D);
+        desenharProjecao();
+    }
+
+    // Metodo para aplicar projeção oblíqua
+    void aplicarProjecaoObliqua() {
+        double angulo = Double.parseDouble(JOptionPane.showInputDialog("Digite o ângulo da projeção oblíqua:"));
+        pontosProjetados = Projecoes.obliqua(pontosSolido3D, angulo);
+        desenharProjecao();
+    }
+
+    // Metodo para aplicar projeção em perspectiva
+    void aplicarProjecaoPerspectiva() {
+        double distancia = Double.parseDouble(JOptionPane.showInputDialog("Digite a distância da projeção perspectiva:"));
+        pontosProjetados = Projecoes.perspectiva(pontosSolido3D, distancia);
+        desenharProjecao();
+    }
+
+    // Metodo para desenhar a projeção com Bresenham
+    private void desenharProjecao() {
+        pontosDesenho.clear();
+        for (int i = 0; i < pontosProjetados.size() - 1; i++) {
+            Ponto p1 = pontosProjetados.get(i);
+            Ponto p2 = pontosProjetados.get(i + 1);
+            desenharLinha(p1, p2);
+        }
+        updateCoordenadasArea(pontosProjetados);
+        repaint();
     }
 
     // Métodos de Transformação

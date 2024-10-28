@@ -65,6 +65,23 @@ public class CordenadasApp {
         JButton escalaButton = new JButton("Escala");
         escalaButton.addActionListener(e -> painelDesenho.setAlgorithm("Escala"));
 
+
+        // Botão para definir pontos de um sólido 3D
+        JButton definirSolidoButton = new JButton("Definir Sólido 3D");
+        definirSolidoButton.addActionListener(e -> painelDesenho.definirPontosSolido3D());
+
+        // Botão para projeção ortográfica
+        JButton projecaoOrtograficaButton = new JButton("Projeção Ortográfica");
+        projecaoOrtograficaButton.addActionListener(e -> painelDesenho.aplicarProjecaoOrtografica());
+
+        // Botão para projeção oblíqua
+        JButton projecaoObliquaButton = new JButton("Projeção Oblíqua");
+        projecaoObliquaButton.addActionListener(e -> painelDesenho.aplicarProjecaoObliqua());
+
+        // Botão para projeção perspectiva
+        JButton projecaoPerspectivaButton = new JButton("Projeção Perspectiva");
+        projecaoPerspectivaButton.addActionListener(e -> painelDesenho.aplicarProjecaoPerspectiva());
+
         // Botão para limpar a tela
         JButton clearButton = new JButton("Limpar Tela");
         clearButton.addActionListener(e -> painelDesenho.clearScreen());
@@ -82,6 +99,10 @@ public class CordenadasApp {
         controlPanel.add(translacaoButton);
         controlPanel.add(rotacaoButton);
         controlPanel.add(escalaButton);
+        controlPanel.add(definirSolidoButton);
+        controlPanel.add(projecaoOrtograficaButton);
+        controlPanel.add(projecaoObliquaButton);
+        controlPanel.add(projecaoPerspectivaButton);
         controlPanel.add(clearButton);
 
         // Área de texto para exibir coordenadas dos pontos
