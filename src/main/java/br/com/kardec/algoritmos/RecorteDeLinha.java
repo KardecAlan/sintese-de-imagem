@@ -89,4 +89,8 @@ public class RecorteDeLinha {
         }
         return pontosRecortados;
     }
+
+    public boolean estaDentro(Ponto ponto) {
+        return ponto.getX() >= xMin && ponto.getX() <= xMax && ponto.getY() >= yMin && ponto.getY() <= yMax;
+    }
 }
