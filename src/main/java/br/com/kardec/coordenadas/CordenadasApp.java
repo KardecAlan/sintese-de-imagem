@@ -1,5 +1,7 @@
 package br.com.kardec.coordenadas;
 
+import br.com.kardec.algoritmos.Ponto;
+
 import javax.swing.*;
 import java.awt.*;
 
@@ -7,7 +9,7 @@ public class CordenadasApp {
     public static void main(String[] args) {
         JFrame frame = new JFrame("Sistema de Coordenadas - Desenhos");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(800, 600);
+        frame.setSize(1000, 800);
 
         // Painel de desenho
         JTextArea coordenadasArea = new JTextArea();
@@ -54,6 +56,15 @@ public class CordenadasApp {
         JButton recortePoligonoButton = new JButton("Recorte de Polígono");
         recortePoligonoButton.addActionListener(e -> painelDesenho.setAlgorithm("RecortePoligono"));
 
+        JButton translacaoButton = new JButton("Translação");
+        translacaoButton.addActionListener(e -> painelDesenho.setAlgorithm("Translacao"));
+
+        JButton rotacaoButton = new JButton("Rotação");
+        rotacaoButton.addActionListener(e -> painelDesenho.setAlgorithm("Rotacao"));
+
+        JButton escalaButton = new JButton("Escala");
+        escalaButton.addActionListener(e -> painelDesenho.setAlgorithm("Escala"));
+
         // Botão para limpar a tela
         JButton clearButton = new JButton("Limpar Tela");
         clearButton.addActionListener(e -> painelDesenho.clearScreen());
@@ -68,6 +79,9 @@ public class CordenadasApp {
         controlPanel.add(varreduraButton);
         controlPanel.add(recorteButton); // Novo botão de recorte
         controlPanel.add(recortePoligonoButton);
+        controlPanel.add(translacaoButton);
+        controlPanel.add(rotacaoButton);
+        controlPanel.add(escalaButton);
         controlPanel.add(clearButton);
 
         // Área de texto para exibir coordenadas dos pontos

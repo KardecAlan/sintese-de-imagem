@@ -12,8 +12,8 @@ import java.util.List;
 
 public class PainelDesenho extends JPanel {
     private static final int PIXEL_SIZE = 20; // Tamanho de cada célula em pixels
-    private int larguraPixels = 50; // Largura em número de pixels (ajustável pelo usuário)
-    private int alturaPixels = 50;  // Altura em número de pixels (ajustável pelo usuário)
+    private int larguraPixels = 30; // Largura em número de pixels (ajustável pelo usuário)
+    private int alturaPixels = 30;  // Altura em número de pixels (ajustável pelo usuário)
     private String selectedAlgorithm = "";
     private ArrayList<Ponto> pontosDesenho = new ArrayList<>();
     private final ArrayList<Ponto> pontosPolilinha = new ArrayList<>();
@@ -66,6 +66,9 @@ public class PainelDesenho extends JPanel {
                         case "Polilinhas" -> handlePolilinhasClick(e);
                         case "Recursivo" -> handlePreenchimentoRecursivoClick(e);
                         case "Varredura" -> handlePreenchimentoVarreduraClick(e);
+                        case "Translacao" -> aplicarTranslacao();
+                        case "Rotacao" -> aplicarRotacao();
+                        case "Escala" -> aplicarEscala();
                     }
                 }
                 repaint();
@@ -75,6 +78,32 @@ public class PainelDesenho extends JPanel {
 
     public void setBezierDegree(int degree) {
         this.bezierDegree = degree;
+    }
+
+    // Métodos de Transformação
+    public void aplicarTranslacao() {
+        int dx = Integer.parseInt(JOptionPane.showInputDialog("Digite o deslocamento em X:"));
+        int dy = Integer.parseInt(JOptionPane.showInputDialog("Digite o deslocamento em Y:"));
+        Transformacoes transformacoes = new Transformacoes();
+        pontosDesenho = Transformacoes.transladar(pontosDesenho, dx, dy);
+        updateCoordenadasArea(pontosDesenho);
+    }
+
+    public void aplicarRotacao() {
+        double angulo = Double.parseDouble(JOptionPane.showInputDialog("Digite o ângulo de rotação (em graus):"));
+        int px = Integer.parseInt(JOptionPane.showInputDialog("Digite a coordenada X do ponto de pivô:"));
+        int py = Integer.parseInt(JOptionPane.showInputDialog("Digite a coordenada Y do ponto de pivô:"));
+        pontosDesenho = Transformacoes.rotacionar(pontosDesenho, angulo, new Ponto(px, py));
+        updateCoordenadasArea(pontosDesenho);
+    }
+
+    public void aplicarEscala() {
+        double escalaX = Double.parseDouble(JOptionPane.showInputDialog("Digite o fator de escala em X:"));
+        double escalaY = Double.parseDouble(JOptionPane.showInputDialog("Digite o fator de escala em Y:"));
+        int px = Integer.parseInt(JOptionPane.showInputDialog("Digite a coordenada X do ponto fixo:"));
+        int py = Integer.parseInt(JOptionPane.showInputDialog("Digite a coordenada Y do ponto fixo:"));
+        pontosDesenho = Transformacoes.escalarContorno(pontosDesenho, escalaX, escalaY, new Ponto(px, py));
+        updateCoordenadasArea(pontosDesenho);
     }
 
     // Inicializa o canvas para o tamanho da grade
@@ -180,6 +209,7 @@ public class PainelDesenho extends JPanel {
             clickCount = 0;
             pontosClicados.clear(); // Limpa os pontos temporários após desenhar a elipse
         }
+        updateCoordenadasArea(pontosDesenho);
     }
 
     private void executeElipse(int raioX, int raioY, Ponto centro) {
@@ -199,6 +229,7 @@ public class PainelDesenho extends JPanel {
             recorteCanto2 = new Ponto(gridX, gridY);
             clickCount = 0;
             desenharLinha(new Ponto(recorteCanto1.getX(), recorteCanto1.getY()), new Ponto(recorteCanto2.getX(), recorteCanto2.getY()));
+            updateCoordenadasArea(pontosDesenho);
         }
     }
 
@@ -239,6 +270,7 @@ public class PainelDesenho extends JPanel {
                 JOptionPane.showMessageDialog(this, "Por favor, insira um valor numérico válido para o raio.");
             }
         }
+        updateCoordenadasArea(pontosDesenho);
         repaint();
     }
 
@@ -288,6 +320,7 @@ public class PainelDesenho extends JPanel {
                 executeCurvas(new Ponto(x1, y1), new Ponto(x2, y2), new Ponto(x3, y3), new Ponto(x4, y4));
             }
         }
+        updateCoordenadasArea(pontosDesenho);
         repaint();
     }
 
