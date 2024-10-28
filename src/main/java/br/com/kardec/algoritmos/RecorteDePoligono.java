@@ -2,7 +2,7 @@ package br.com.kardec.algoritmos;
 
 import java.util.ArrayList;
 
-public class RecorteDeLinha {
+public class RecorteDePoligono {
     private static final int INSIDE = 0; // 0000
     private static final int LEFT = 1;   // 0001
     private static final int RIGHT = 2;  // 0010
@@ -11,15 +11,14 @@ public class RecorteDeLinha {
 
     private int xMin, yMin, xMax, yMax;
 
-
-    public RecorteDeLinha(int xMin, int yMin, int xMax, int yMax) {
-        // Define os limites de recorte com os pontos que o usuário clicar
+    public RecorteDePoligono(int xMin, int yMin, int xMax, int yMax) {
         this.xMin = xMin;
         this.yMin = yMin;
         this.xMax = xMax;
         this.yMax = yMax;
     }
 
+    // Metodo para calcular o código de região de um ponto
     private int computeCode(int x, int y) {
         int code = INSIDE;
         if (x < xMin) code |= LEFT;
@@ -29,16 +28,18 @@ public class RecorteDeLinha {
         return code;
     }
 
-    public ArrayList<Ponto> recortarLinha(Ponto p1, Ponto p2) {
+    //Metodo de recorte de linha usando o algoritmo de Cohen-Sutherland
+    private ArrayList<Ponto> recortarLinha(Ponto p1, Ponto p2) {
+        ArrayList<Ponto> pontosLinha = new ArrayList<>();
         int x1 = p1.getX(), y1 = p1.getY();
         int x2 = p2.getX(), y2 = p2.getY();
         int code1 = computeCode(x1, y1);
         int code2 = computeCode(x2, y2);
-        boolean accept = false;
 
         while (true) {
             if ((code1 | code2) == 0) { // Ambos os pontos estão dentro
-                accept = true;
+                pontosLinha.add(new Ponto(x1, y1));
+                pontosLinha.add(new Ponto(x2, y2));
                 break;
             } else if ((code1 & code2) != 0) { // Ambos os pontos estão fora
                 break;
@@ -75,15 +76,24 @@ public class RecorteDeLinha {
             }
         }
 
-        ArrayList<Ponto> pontosRecortados = new ArrayList<>();
-        if (accept) {
-            pontosRecortados.add(new Ponto(x1, y1));
-            pontosRecortados.add(new Ponto(x2, y2));
-        }
-        return pontosRecortados;
+        // Converte a linha recortada para uma lista de pontos discretos
+        Bresenham bresenham = new Bresenham(new Ponto(x1, y1), new Ponto(x2, y2));
+        pontosLinha.addAll(bresenham.getPontos());
+        return pontosLinha;
     }
 
-    public boolean estaDentro(Ponto ponto) {
-        return ponto.getX() >= xMin && ponto.getX() <= xMax && ponto.getY() >= yMin && ponto.getY() <= yMax;
+    // Método para recortar uma polilinha inteira, segmentando linha a linha
+    public ArrayList<Ponto> recortarPoligono(ArrayList<Ponto> pontosPolilinha) {
+        ArrayList<Ponto> pontosDentroDoRecorte = new ArrayList<>();
+
+        // Percorre a polilinha segmentando linha a linha e aplicando o recorte
+        for (int i = 0; i < pontosPolilinha.size() - 1; i++) {
+            Ponto p1 = pontosPolilinha.get(i);
+            Ponto p2 = pontosPolilinha.get(i + 1);
+            ArrayList<Ponto> linhaRecortada = recortarLinha(p1, p2);
+            pontosDentroDoRecorte.addAll(linhaRecortada); // Adiciona todos os pontos dentro do recorte
+        }
+
+        return pontosDentroDoRecorte;
     }
 }

@@ -8,6 +8,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
+import java.util.List;
 
 public class PainelDesenho extends JPanel {
     private static final int PIXEL_SIZE = 20; // Tamanho de cada célula em pixels
@@ -15,6 +16,7 @@ public class PainelDesenho extends JPanel {
     private int alturaPixels = 50;  // Altura em número de pixels (ajustável pelo usuário)
     private String selectedAlgorithm = "";
     private ArrayList<Ponto> pontosDesenho = new ArrayList<>();
+    private final ArrayList<Ponto> pontosPolilinha = new ArrayList<>();
     private final ArrayList<Ponto> pontosEntrada = new ArrayList<>();
     private final ArrayList<Ponto> polilinhaPontos = new ArrayList<>();
     private final ArrayList<Ponto[]> linhasDesenhadas = new ArrayList<>();
@@ -49,7 +51,11 @@ public class PainelDesenho extends JPanel {
                         recorteCanto2 = new Ponto(gridX, gridY);
                         clickCount = 0;
                         definindoRecorte = false;
-                        aplicarRecorte();
+                        if ("RecortePoligono".equals(selectedAlgorithm)) {
+                            aplicarRecortePoligono();
+                        } else if ("Recorte".equals(selectedAlgorithm)) {
+                            aplicarRecorte();
+                        }
                     }
                 } else {
                     switch (selectedAlgorithm) {
@@ -86,7 +92,7 @@ public class PainelDesenho extends JPanel {
         this.selectedAlgorithm = algorithm;
         coordenadasArea.setText("");
 
-        if ("Recorte".equals(selectedAlgorithm)) {
+        if ("Recorte".equals(selectedAlgorithm) || "RecortePoligono".equals(selectedAlgorithm)) {
             definindoRecorte = true;
             clickCount = 0;
             JOptionPane.showMessageDialog(this, "Clique para definir os pontos da área de recorte.");
@@ -103,6 +109,7 @@ public class PainelDesenho extends JPanel {
         g2d.dispose();
         pontosDesenho.clear();
         pontosEntrada.clear();
+        pontosPolilinha.clear();
         polilinhaPontos.clear();
         linhasDesenhadas.clear();
         recorteCanto1 = null;
@@ -133,8 +140,30 @@ public class PainelDesenho extends JPanel {
 
         pontosDesenho.clear();
         pontosDesenho.addAll(pontosRecortados);
-        updateCoordenadasArea(pontosRecortados);
+        updateCoordenadasArea(pontosDesenho);
     }
+
+    private void aplicarRecortePoligono() {
+        if (recorteCanto1 != null && recorteCanto2 != null) {
+            int xMin = Math.min(recorteCanto1.getX(), recorteCanto2.getX());
+            int yMin = Math.min(recorteCanto1.getY(), recorteCanto2.getY());
+            int xMax = Math.max(recorteCanto1.getX(), recorteCanto2.getX());
+            int yMax = Math.max(recorteCanto1.getY(), recorteCanto2.getY());
+
+            RecorteDePoligono recorte = new RecorteDePoligono(xMin, yMin, xMax, yMax);
+            ArrayList<Ponto> pontosRecortados = recorte.recortarPoligono(pontosPolilinha);
+
+            pontosDesenho.clear();
+            pontosDesenho.addAll(pontosRecortados);
+            updateCoordenadasArea(pontosDesenho);
+
+        }
+    }
+
+
+
+
+
 
     private void handleElipseClick(int gridX, int gridY) {
         if (clickCount == 0) {
@@ -173,11 +202,26 @@ public class PainelDesenho extends JPanel {
         }
     }
 
+    private void handlePolilinhasClick(MouseEvent e) {
+        int gridX = e.getX() / PIXEL_SIZE;
+        int gridY = e.getY() / PIXEL_SIZE;
+
+        polilinhaPontos.add(new Ponto(gridX, gridY));
+        pontosEntrada.add(new Ponto(gridX, gridY));
+
+        if (SwingUtilities.isRightMouseButton(e) && polilinhaPontos.size() >= 3) {
+            executePolilinhas(polilinhaPontos);
+            pontosPolilinha.addAll(polilinhaPontos);
+            polilinhaPontos.clear();
+        }
+        repaint();
+    }
+
+
     private void desenharLinha(Ponto p1, Ponto p2) {
         Bresenham bresenham = new Bresenham(p1, p2);
         pontosDesenho.addAll(bresenham.getPontos());
         linhasDesenhadas.add(new Ponto[]{p1, p2});
-//        updateCoordenadasArea();
     }
 
     private void handleCirculoClick(MouseEvent e) {
@@ -247,19 +291,6 @@ public class PainelDesenho extends JPanel {
         repaint();
     }
 
-    private void handlePolilinhasClick(MouseEvent e) {
-        int gridX = e.getX() / PIXEL_SIZE;
-        int gridY = e.getY() / PIXEL_SIZE;
-
-        polilinhaPontos.add(new Ponto(gridX, gridY));
-        pontosEntrada.add(new Ponto(gridX, gridY));
-
-        if (SwingUtilities.isRightMouseButton(e) && polilinhaPontos.size() >= 3) {
-            executePolilinhas(polilinhaPontos);
-            polilinhaPontos.clear();
-        }
-        repaint();
-    }
 
     private void handlePreenchimentoRecursivoClick(MouseEvent e) {
         int x = e.getX() / PIXEL_SIZE;

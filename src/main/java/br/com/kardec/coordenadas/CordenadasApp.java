@@ -51,6 +51,9 @@ public class CordenadasApp {
         JButton recorteButton = new JButton("Recorte de Linha");
         recorteButton.addActionListener(e -> painelDesenho.setAlgorithm("Recorte"));
 
+        JButton recortePoligonoButton = new JButton("Recorte de Polígono");
+        recortePoligonoButton.addActionListener(e -> painelDesenho.setAlgorithm("RecortePoligono"));
+
         // Botão para limpar a tela
         JButton clearButton = new JButton("Limpar Tela");
         clearButton.addActionListener(e -> painelDesenho.clearScreen());
@@ -64,6 +67,7 @@ public class CordenadasApp {
         controlPanel.add(recursivoButton);
         controlPanel.add(varreduraButton);
         controlPanel.add(recorteButton); // Novo botão de recorte
+        controlPanel.add(recortePoligonoButton);
         controlPanel.add(clearButton);
 
         // Área de texto para exibir coordenadas dos pontos
